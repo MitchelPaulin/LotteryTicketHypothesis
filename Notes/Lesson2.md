@@ -82,6 +82,8 @@ Over fitting a model means your model becomes very good at recognizing your trai
 
 ## What's happening under the hood
 
+If you want a really good understanding watch the 3Blue1Brown series [here](https://www.youtube.com/watch?v=aircAruvnKk).
+
 You can think of making a prediction as a function of pixel values which returns a probability distribution. For example.
 
 ```txt
@@ -90,3 +92,21 @@ f(my_image) =  0.99=dog,
 ```
 
 The simplest and most often used way to get a prediction at the end just to make the largest probability value and say thats our prediction. You can often see this in python code as `np.argmax`.
+
+To make a model learn the math that goes on is referred to as stochastic gradient descent. This is a technique used to find the minium of a function with many inputs. The model makes a prediction and we look at the outputs, to calculate the error we take the root mean square error of the guess vs the actual answer and that gives us a measurement of how good the model if performing. Eventually the model can be tunned until it fits our data and we can make accurate predictions.
+
+### Vocabulary
+
+- Learning rate: A thing we multiply our gradient by to decide how much to update the weights by.
+
+- Epoch: One complete run through all of our data points (e.g. all of our images). So for non-stochastic gradient descent we just did, every single loop, we did the entire dataset. But if you've got a dataset with a thousand images and our mini-batch size is 100, then it would take you 10 iterations to see every image once. So that would be one epoch. Epochs are important because if you do lots of epochs, then you are looking at your images lots of times, so every time you see an image, there's a bigger chance of overfitting. So we generally don't want to do too many epochs.
+
+- Mini-batch: A random bunch of points that you use to update your weights.
+
+- SGD: Stochastic gradient descent using mini-batches.
+
+- Model / Architecture: They kind of mean the same thing. In this case, our architecture is [\vec{y} = X\vec{a}] ﹣ the architecture is the mathematical function that you're fitting the parameters to. And we're going to learn later today or next week what the mathematical function of things like ResNet34 actually is. But it's basically pretty much what you've just seen. It's a bunch of matrix products.
+
+- Parameters / Coefficients / Weights: Numbers that you are updating.
+
+- Loss function: The thing that's telling you how far away or how close you are to the correct answer. For classification problems, we use cross entropy loss, also known as negative log likelihood loss. This penalizes incorrect confident predictions, and correct unconfident predictions.
