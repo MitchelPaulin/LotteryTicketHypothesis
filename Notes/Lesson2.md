@@ -109,4 +109,4 @@ To make a model learn the math that goes on is referred to as stochastic gradien
 
 - Parameters / Coefficients / Weights: Numbers that you are updating.
 
-- Loss function: The thing that's telling you how far away or how close you are to the correct answer. For classification problems, we use cross entropy loss, also known as negative log likelihood loss. This penalizes incorrect confident predictions, and correct unconfident predictions.
+- Loss function: The thing that's telling you how far away or how close you are to the correct answer. For classification problems, we use cross entropy loss, also known as negative log likelihood loss. This penalizes incorrect confident predictions, and correct unconfident predictions. The validation loss is the calculated error against the validation set and training loss is the calculated error against the training set.
