@@ -68,7 +68,7 @@ bs=48
 
 data_lm = (TextList.from_folder(path)
            #Inputs: all the text files in path
-            .filter_by_folder(include=['train', 'test']) 
+            .filter_by_folder(include=['train', 'test'])
            #We may have other temp folders that contain text files so we only keep what's in train and test
             .random_split_by_pct(0.1)
            #We randomly split and keep 10% (10,000 reviews) for validation
@@ -234,7 +234,7 @@ learn = collab_learner(data, n_factors=50, y_range=y_range)
 learn.fit_one_cycle(3, 5e-3)
 ```
 
-*This is the halfway point of the course, here we have seen all the key application of machine learning. Now from this point onward the course will focus more on digging into the details of how these types of things work*
+Note: *This is the halfway point of the course, here we have seen all the key application of machine learning. Now from this point onward the course will focus more on digging into the details of how these types of things work*
 
 ## What is an Embedding
 
