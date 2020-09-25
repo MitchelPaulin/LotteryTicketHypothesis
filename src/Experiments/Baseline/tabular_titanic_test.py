@@ -5,9 +5,9 @@ import pandas as pd
 
 # to get data set run ! kaggle competitions download -c titanic and move to /data/titanic
 
-train = pd.read_csv("../data/titanic/train.csv")
+train = pd.read_csv("../../../data/titanic/train.csv")
 
-test = pd.read_csv("../data/titanic/test.csv")
+test = pd.read_csv("../../../data/titanic/test.csv")
 
 # what we want to predict
 dep_var = 'Survived'
