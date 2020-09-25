@@ -2,7 +2,6 @@ from fastai import *
 from fastai.tabular import *
 from fastai.tabular.all import *
 import pandas as pd
-import numpy as np
 
 # to get data set run ! kaggle competitions download -c titanic and move to /data/titanic
 
@@ -26,10 +25,12 @@ cont_names = [ 'Age', 'SibSp', 'Parch', 'Fare']
 procs = [FillMissing, Categorify, Normalize]
 
 # TODO
-to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, valid_idx=list(range(750, 891)), bs=32)
+splits = RandomSplitter(valid_pct=0.2, seed=42)(range_of(train))
+to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
 
 # Create the learner
-learn = tabular_learner(to_nn)
+learn = tabular_learner(to_nn, metrics=error_rate)
+print(learn.loss_func)
 
 # Train for 15 epochs
 learn.fit_one_cycle(15, max_lr=slice(1e-03))
