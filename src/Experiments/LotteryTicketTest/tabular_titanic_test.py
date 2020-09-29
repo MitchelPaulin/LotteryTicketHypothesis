@@ -25,32 +25,32 @@ cont_names = [ 'Age', 'SibSp', 'Parch', 'Fare']
 # Normalize: Normalize the range of data
 procs = [FillMissing, Categorify, Normalize]
 
-# TODO
-splits = RandomSplitter(valid_pct=0.2, seed=42)(range_of(train))
+# Set the seed for reproducibility, this is tested and does work
+set_seed(42, reproducible=True)
+
+# Create the data loader
+splits = RandomSplitter(valid_pct=0.2)(range_of(train))
 to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
 
 # Create the learner
 learn = LT_tabular_learner(to_nn, metrics=error_rate)
 
-with open('test1.txt', 'w') as out:
-    out.write(learn.model.LT_dump_weights())
-    
-# Train for 15 epochs
+# Train for 5 epochs
 learn.fit_one_cycle(5, max_lr=slice(1e-03))
 
-with open('test2.txt', 'w') as out:
-    out.write(learn.model.LT_dump_weights())
+# Experiment two
+set_seed(42, reproducible=True) # set the seed again to ensure exact same testing conditions
 
-learn.model.LT_restore_weights()
+splits = RandomSplitter(valid_pct=0.2)(range_of(train))
+to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
 
-with open('test3.txt', 'w') as out:
-    out.write(learn.model.LT_dump_weights())
+learn2 = LT_tabular_learner(to_nn, metrics=error_rate)
 
-learn.fit_one_cycle(5, max_lr=slice(1e-03))
-
-with open('test4.txt', 'w') as out:
-    out.write(learn.model.LT_dump_weights())
-
-# Predict something
-row, clas, prods = learn.predict(test.iloc[0])
-print(str(row))
+"""
+Now, before we learn again, we need to 
+1. Prune the original model weights
+2. For the weights that were not pruned, reset them to what they were originally in learn
+TODO
+"""
+   
+learn2.fit_one_cycle(5, max_lr=slice(1e-03))
