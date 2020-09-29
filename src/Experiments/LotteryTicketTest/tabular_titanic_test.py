@@ -36,13 +36,19 @@ with open('test1.txt', 'w') as out:
     out.write(learn.model.LT_dump_weights())
     
 # Train for 15 epochs
-learn.fit_one_cycle(15, max_lr=slice(1e-03))
+learn.fit_one_cycle(5, max_lr=slice(1e-03))
+
+with open('test2.txt', 'w') as out:
+    out.write(learn.model.LT_dump_weights())
 
 learn.model.LT_restore_weights()
 
-learn.fit_one_cycle(15, max_lr=slice(1e-03))
+with open('test3.txt', 'w') as out:
+    out.write(learn.model.LT_dump_weights())
 
-with open('test2.txt', 'w') as out:
+learn.fit_one_cycle(5, max_lr=slice(1e-03))
+
+with open('test4.txt', 'w') as out:
     out.write(learn.model.LT_dump_weights())
 
 # Predict something

@@ -44,10 +44,10 @@ class LT_TabularModel(Module):
         # custom code below
         # save the initial weights of the model so we can restore them after training
         self.LT_old_weights = []
-        for layer in self.layers:
-            for i in range(len(layer)):
-                if isinstance(layer[i], torch.nn.Linear):
-                    self.LT_old_weights.append(deepcopy(layer[i]))
+        for i in range(len(self.layers)):
+            for j in range(len(self.layers[i])):
+                if isinstance(self.layers[i][j], torch.nn.Linear):
+                    self.LT_old_weights.append(deepcopy(self.layers[i][j]))
                     
     def LT_prune_layers(self, p=0.4):
         for layer in self.layers:
@@ -57,11 +57,14 @@ class LT_TabularModel(Module):
                     
     def LT_restore_weights(self):
         k = 0
-        for layer in self.layers:
-            for i in range(len(layer)):
-                if isinstance(layer[i], torch.nn.Linear):
-                    layer[i] = self.LT_old_weights[k]
+        for i in range(len(self.layers)):
+            for j in range(len(self.layers[i])):
+                if isinstance(self.layers[i][j], torch.nn.Linear):
+                    with torch.no_grad():
+                        self.layers[i][j].weight.copy_(self.LT_old_weights[k].weight)
                     k += 1
+                elif isinstance(self.layers[i][j], torch.nn.BatchNorm1d):
+                    self.layers[i][j] = torch.nn.BatchNorm1d(self.layers[i][j].num_features)
     
     def LT_dump_weights(self):
         ret = ""
