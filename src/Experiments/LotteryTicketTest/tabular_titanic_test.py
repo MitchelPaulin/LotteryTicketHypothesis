@@ -34,9 +34,16 @@ to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_n
 
 # Create the learner
 learn = LT_tabular_learner(to_nn, metrics=error_rate)
+print(learn.model.LT_dump_weights())
 
 # Train for 5 epochs
 learn.fit_one_cycle(5, max_lr=slice(1e-03))
+
+"""
+Now, before we learn again, we need to 
+1. Prune the original model weights
+2. For the weights that were not pruned, reset them to what they were originally in learn
+"""
 
 # Experiment two
 set_seed(42, reproducible=True) # set the seed again to ensure exact same testing conditions
@@ -45,12 +52,8 @@ splits = RandomSplitter(valid_pct=0.2)(range_of(train))
 to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
 
 learn2 = LT_tabular_learner(to_nn, metrics=error_rate)
-
-"""
-Now, before we learn again, we need to 
-1. Prune the original model weights
-2. For the weights that were not pruned, reset them to what they were originally in learn
-TODO
-"""
+learn.model.LT_prune_layers()
+learn2.model.LT_copy_pruned_weights(learn.model)
+print(learn2.model.LT_dump_weights())
    
 learn2.fit_one_cycle(5, max_lr=slice(1e-03))

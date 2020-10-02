@@ -2,6 +2,7 @@ from fastai import *
 from fastai.tabular import *
 from fastai.tabular.all import *
 import torch
+import torch.nn.utils.prune
 from copy import deepcopy
 
 @log_args(but_as=Learner.__init__)
@@ -53,18 +54,7 @@ class LT_TabularModel(Module):
         for layer in self.layers:
             for l in layer:
                 if isinstance(l, torch.nn.Linear):
-                    torch.prune.l1_unstructured(module, name='weight', amount=p)
-                    
-    def LT_restore_weights(self):
-        k = 0
-        for i in range(len(self.layers)):
-            for j in range(len(self.layers[i])):
-                if isinstance(self.layers[i][j], torch.nn.Linear):
-                    with torch.no_grad():
-                        self.layers[i][j].weight.copy_(self.LT_old_weights[k].weight)
-                    k += 1
-                elif isinstance(self.layers[i][j], torch.nn.BatchNorm1d):
-                    self.layers[i][j] = torch.nn.BatchNorm1d(self.layers[i][j].num_features)
+                    torch.nn.utils.prune.l1_unstructured(l, name='weight', amount=p)
     
     def LT_dump_weights(self):
         ret = ""
@@ -73,6 +63,37 @@ class LT_TabularModel(Module):
                 if isinstance(layer[i], torch.nn.Linear):
                     ret += str(layer[i].weight)
         return ret
+    
+    def LT_copy_pruned_weights(self, learner_model):
+        for layer in zip(self.layers, learner_model.layers):
+            parent = layer[1]
+            child = layer[0]
+            
+            # find linear in child
+            child_linear = None
+            for l in child:
+                if isinstance(l, torch.nn.Linear):
+                    child_linear = l
+                    break
+            assert(child_linear)
+            
+            # find linear in child
+            parent_linear = None
+            for l in parent:
+                if isinstance(l, torch.nn.Linear):
+                    parent_linear = l
+                    break
+            assert(parent_linear)
+            
+            # get list of new weights after reseting the unpruned ones
+            new_weights = []
+            for tensor1, tensor2 in zip(child_linear.weight, parent_linear.weight):
+                new_weights.append([])
+                for w1, w2 in zip(tensor1, tensor2):
+                    new_weights[-1].append(0 if w2.item() == 0 else w1.item())
+            new_weight_tensor = torch.FloatTensor(new_weights)
+            child_linear.weight = nn.Parameter(new_weight_tensor)
+        
         
     def forward(self, x_cat, x_cont=None):
         if self.n_emb != 0:
