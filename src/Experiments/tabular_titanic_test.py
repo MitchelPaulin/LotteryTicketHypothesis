@@ -34,7 +34,6 @@ to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_n
 
 # Create the learner
 learn = LT_tabular_learner(to_nn, metrics=error_rate)
-print(learn.model.LT_dump_weights())
 
 # Train for 5 epochs
 learn.fit_one_cycle(5, max_lr=slice(1e-03))
@@ -54,6 +53,5 @@ to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_n
 learn2 = LT_tabular_learner(to_nn, metrics=error_rate)
 learn.model.LT_prune_layers()
 learn2.model.LT_copy_pruned_weights(learn.model)
-print(learn2.model.LT_dump_weights())
-   
+learn2.model.LT_prune_layers()
 learn2.fit_one_cycle(5, max_lr=slice(1e-03))
