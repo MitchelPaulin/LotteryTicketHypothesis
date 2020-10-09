@@ -2,12 +2,13 @@ from fastai import *
 from fastai.tabular import *
 from fastai.tabular.all import *
 import pandas as pd
+from LT_TabularBase.TabularLearner import *
 
 # to get data set run ! kaggle competitions download -c titanic and move to /data/titanic
 
-train = pd.read_csv("../../../data/titanic/train.csv")
+train = pd.read_csv("../../data/titanic/train.csv")
 
-test = pd.read_csv("../../../data/titanic/test.csv")
+test = pd.read_csv("../../data/titanic/test.csv")
 
 # what we want to predict
 dep_var = 'Survived'
@@ -24,17 +25,35 @@ cont_names = [ 'Age', 'SibSp', 'Parch', 'Fare']
 # Normalize: Normalize the range of data
 procs = [FillMissing, Categorify, Normalize]
 
-# TODO
-splits = RandomSplitter(valid_pct=0.2, seed=42)(range_of(train))
+# Set the seed for reproducibility, this is tested and does work
+set_seed(42, reproducible=True)
+
+# Create the data loader
+splits = RandomSplitter(valid_pct=0.2)(range_of(train))
 to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
 
 # Create the learner
-learn = tabular_learner(to_nn, metrics=error_rate)
-print(learn.loss_func)
+learn = LT_tabular_learner(to_nn, metrics=error_rate)
+print(learn.model.LT_dump_weights())
 
-# Train for 15 epochs
-learn.fit_one_cycle(15, max_lr=slice(1e-03))
+# Train for 5 epochs
+learn.fit_one_cycle(5, max_lr=slice(1e-03))
 
-# Predict something
-row, clas, prods = learn.predict(test.iloc[0])
-print(str(row))
+"""
+Now, before we learn again, we need to 
+1. Prune the original model weights
+2. For the weights that were not pruned, reset them to what they were originally in learn
+"""
+
+# Experiment two
+set_seed(42, reproducible=True) # set the seed again to ensure exact same testing conditions
+
+splits = RandomSplitter(valid_pct=0.2)(range_of(train))
+to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
+
+learn2 = LT_tabular_learner(to_nn, metrics=error_rate)
+learn.model.LT_prune_layers()
+learn2.model.LT_copy_pruned_weights(learn.model)
+print(learn2.model.LT_dump_weights())
+   
+learn2.fit_one_cycle(5, max_lr=slice(1e-03))
