@@ -64,6 +64,19 @@ class LT_TabularModel(Module):
                     ret += str(layer[i].weight)
         return ret
     
+    def LT_calculate_pruned_percentage(self):
+        pruned = 0
+        total = 0
+        for layer in self.layers:
+            for i in range(len(layer)):
+                if isinstance(layer[i], torch.nn.Linear):
+                    for wl in layer[i].weight:
+                        for weight in wl:
+                            if weight.item() == 0:
+                                pruned += 1
+                            total += 1
+        return pruned / total 
+    
     def LT_copy_pruned_weights(self, learner_model):
         for layer in zip(self.layers, learner_model.layers):
             parent = layer[1]
@@ -93,7 +106,65 @@ class LT_TabularModel(Module):
                     new_weights[-1].append(0 if w2.item() == 0 else w1.item())
             new_weight_tensor = torch.FloatTensor(new_weights)
             child_linear.weight = nn.Parameter(new_weight_tensor)
-        
+
+    def LT_copy_unpruned_weights(self, learner_model):
+        for layer in zip(self.layers, learner_model.layers):
+            parent = layer[1]
+            child = layer[0]
+            
+            # find linear in child
+            child_linear = None
+            for l in child:
+                if isinstance(l, torch.nn.Linear):
+                    child_linear = l
+                    break
+            assert(child_linear)
+            
+            # find linear in child
+            parent_linear = None
+            for l in parent:
+                if isinstance(l, torch.nn.Linear):
+                    parent_linear = l
+                    break
+            assert(parent_linear)
+            
+            # get list of new weights after reseting the unpruned ones
+            new_weights = []
+            for tensor1, tensor2 in zip(child_linear.weight, parent_linear.weight):
+                new_weights.append([])
+                for w1, w2 in zip(tensor1, tensor2):
+                    new_weights[-1].append(0 if w1.item() == 0 else w2.item())
+            new_weight_tensor = torch.FloatTensor(new_weights)
+            child_linear.weight = nn.Parameter(new_weight_tensor)
+            
+    def LT_copy_all_weights(self, learner_model):
+        for layer in zip(self.layers, learner_model.layers):
+            parent = layer[1]
+            child = layer[0]
+            
+            # find linear in child
+            child_linear = None
+            for l in child:
+                if isinstance(l, torch.nn.Linear):
+                    child_linear = l
+                    break
+            assert(child_linear)
+            
+            # find linear in child
+            parent_linear = None
+            for l in parent:
+                if isinstance(l, torch.nn.Linear):
+                    parent_linear = l
+                    break
+            assert(parent_linear)
+            
+            new_weights = []
+            for tensor1, tensor2 in zip(child_linear.weight, parent_linear.weight):
+                new_weights.append([])
+                for w1, w2 in zip(tensor1, tensor2):
+                    new_weights[-1].append(w1.item())
+            new_weight_tensor = torch.FloatTensor(new_weights)
+            child_linear.weight = nn.Parameter(new_weight_tensor)
         
     def forward(self, x_cat, x_cont=None):
         if self.n_emb != 0:
