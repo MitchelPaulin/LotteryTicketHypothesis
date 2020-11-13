@@ -37,7 +37,7 @@ to_nn = TabularDataLoaders.from_df(train, '../data/videogames/', procs=procs, ca
 learn = LT_tabular_learner(to_nn, metrics=rmse)
 ROUNDS = 10
 s = 0.25
-p = 0.9 # target 
+p = 0.95 # target 
 while learn.model.LT_calculate_pruned_percentage() < p:
     learn.fit_one_cycle(5, max_lr=slice(1e-03))
     learn.model.LT_prune_layers(s)

@@ -37,9 +37,9 @@ to_nn = TabularDataLoaders.from_df(train, '../data/winequality/', procs=procs, c
 learn = LT_tabular_learner(to_nn, metrics=rmse)
 ROUNDS = 10
 s = 0.25
-p = 0.9 # target 
+p = 0.95 # target 
 while learn.model.LT_calculate_pruned_percentage() < p:
-    learn.fit_one_cycle(5, max_lr=slice(1e-03))
+    learn.fit_one_cycle(35, max_lr=slice(1e-03))
     learn.model.LT_prune_layers(s)
     learn_new = LT_tabular_learner(to_nn, metrics=rmse)
     learn_new.model.LT_copy_pruned_weights(learn.model)

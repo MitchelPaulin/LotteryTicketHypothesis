@@ -21,7 +21,7 @@ cont_names = ['Age', 'Annual_Premium', 'Vintage']
 procs = [Categorify, FillMissing, Normalize]
 
 # Set seed for reproducibility
-set_seed(7, reproducible=True)
+set_seed(42, reproducible=True)
 
 # Create data loader
 splits = RandomSplitter(valid_pct=0.2)(range_of(train))
@@ -32,8 +32,9 @@ to_nn = TabularDataLoaders.from_df(train, '../data/health', procs=procs, cont_na
 learn = LT_tabular_learner(to_nn, metrics=error_rate, emb_drop=0.8)
 
 # Train
-learn.fit_one_cycle(5, max_lr=slice(1e-03))
+learn.fit_one_cycle(10, max_lr=slice(1e-03))
 
+"""
 # Part 2
 set_seed(7, reproducible=True)
 
@@ -46,3 +47,4 @@ learn2.model.LT_copy_pruned_weights(learn.model)
 learn2.model.LT_prune_layers(p=0.8) # To prune the zeros so they actually count as pruned values
 
 learn2.fit_one_cycle(5, max_lr=slice(1e-03))
+"""
