@@ -1,0 +1,5 @@
+Dataset,Baseline Error/RMSE,Oneshot Error/RMSE,Lottery Ticket Error/RMSE
+Titanic,0.106629,0.286517,0.252809
+Wine Quality,0.655744,0.714355,0.65486
+Video Game Sales,0.415348,0.472754,0.584297
+Health Insurance,0.123549,0.121135,0.123549
