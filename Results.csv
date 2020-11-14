@@ -1,0 +1,5 @@
+Dataset,Baseline Error,Oneshot Error,Iterative Error
+Titanic,0.106629 CEL,0.286517 CEL,0.252809 CEL
+Wine Quality,0.655744 RMSE,0.714355 RMSE,0.65486 RMSE
+Video Game Sales,0.415348 RMSE,0.472754 RMSE,0.584297 RMSE
+Health Insurance,0.123549 CEL,0.121135 CEL,0.123549 CEL
