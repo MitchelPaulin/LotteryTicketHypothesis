@@ -5,8 +5,6 @@ from fastai.tabular.all import *
 import pandas as pd
 from LT_TabularBase.TabularLearner import *
 
-# to get data set run ! kaggle competitions download -c titanic and move to /data/titanic
-
 train = pd.read_csv("../../data/health/train.csv")
 
 # What we are predicting

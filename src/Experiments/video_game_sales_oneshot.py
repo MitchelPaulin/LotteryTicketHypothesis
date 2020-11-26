@@ -15,7 +15,7 @@ cont_names = ['EU_Sales', 'JP_Sales', 'Other_Sales', 'Rank']
 procs = [FillMissing, Categorify]
 
 # Set the seed for reproducibility, this is tested and does work
-set_seed(69, reproducible=True)
+set_seed(42, reproducible=True)
 
 # Create the data loader
 splits = RandomSplitter(valid_pct=0.15)(range_of(train))
@@ -34,7 +34,7 @@ Now, before we learn again, we need to
 """
 
 # Experiment two
-set_seed(69, reproducible=True) # set the seed again to ensure exact same testing conditions
+set_seed(42, reproducible=True) # set the seed again to ensure exact same testing conditions
 
 splits = RandomSplitter(valid_pct=0.15)(range_of(train))
 to_nn = TabularDataLoaders.from_df(train, '../data/titanic/', procs=procs, cat_names=cat_names, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)

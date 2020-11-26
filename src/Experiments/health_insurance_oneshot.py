@@ -35,7 +35,7 @@ learn = LT_tabular_learner(to_nn, metrics=error_rate, emb_drop=0.8)
 learn.fit_one_cycle(10, max_lr=slice(1e-03))
 
 # Part 2
-set_seed(7, reproducible=True)
+set_seed(42, reproducible=True)
 
 splits = RandomSplitter(valid_pct=0.2)(range_of(train))
 to_nn = TabularDataLoaders.from_df(train, '../data/health', procs=procs, cont_names=cont_names, y_names=dep_var, splits=splits, bs=32)
