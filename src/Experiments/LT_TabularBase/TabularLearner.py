@@ -3,7 +3,15 @@ from fastai.tabular import *
 from fastai.tabular.all import *
 import torch
 import torch.nn.utils.prune
-from copy import deepcopy
+
+
+def _LT_find_linear(layers):
+        # find linear in layer
+        linear = None
+        for l in layers:
+            if isinstance(l, torch.nn.Linear):
+                return l
+        return None
 
 @log_args(but_as=Learner.__init__)
 class LT_TabularLearner(Learner):
@@ -41,22 +49,23 @@ class LT_TabularModel(Module):
                        for i,(p,a) in enumerate(zip(ps+[0.],actns))]
         if y_range is not None: _layers.append(SigmoidRange(*y_range))
         self.layers = nn.Sequential(*_layers)
-        
-        # custom code below
-        # save the initial weights of the model so we can restore them after training
-        self.LT_old_weights = []
-        for i in range(len(self.layers)):
-            for j in range(len(self.layers[i])):
-                if isinstance(self.layers[i][j], torch.nn.Linear):
-                    self.LT_old_weights.append(deepcopy(self.layers[i][j]))
                     
     def LT_prune_layers(self, p=0.4):
+        """
+        Prune every layer
+        p: The percentage that should be pruned, 0 < p < 1
+        """
         for layer in self.layers:
             for l in layer:
                 if isinstance(l, torch.nn.Linear):
                     torch.nn.utils.prune.l1_unstructured(l, name='weight', amount=p)
     
     def LT_dump_weights(self):
+
+        """
+        Print out all weights, used for debugging 
+        """
+
         ret = ""
         for layer in self.layers:
             for i in range(len(layer)):
@@ -65,6 +74,11 @@ class LT_TabularModel(Module):
         return ret
     
     def LT_calculate_pruned_percentage(self):
+        
+        """
+        Return the percentage of weights that are currently pruned in the model 
+        """
+
         pruned = 0
         total = 0
         for layer in self.layers:
@@ -78,24 +92,14 @@ class LT_TabularModel(Module):
         return pruned / total 
     
     def LT_copy_pruned_weights(self, learner_model):
-        for layer in zip(self.layers, learner_model.layers):
-            parent = layer[1]
-            child = layer[0]
+        for child, parent in zip(self.layers, learner_model.layers):
             
             # find linear in child
-            child_linear = None
-            for l in child:
-                if isinstance(l, torch.nn.Linear):
-                    child_linear = l
-                    break
+            child_linear = _LT_find_linear(child)
             assert(child_linear)
             
-            # find linear in child
-            parent_linear = None
-            for l in parent:
-                if isinstance(l, torch.nn.Linear):
-                    parent_linear = l
-                    break
+            # find linear in parent
+            parent_linear = _LT_find_linear(parent)
             assert(parent_linear)
             
             # get list of new weights after reseting the unpruned ones
@@ -108,24 +112,14 @@ class LT_TabularModel(Module):
             child_linear.weight = nn.Parameter(new_weight_tensor)
 
     def LT_copy_unpruned_weights(self, learner_model):
-        for layer in zip(self.layers, learner_model.layers):
-            parent = layer[1]
-            child = layer[0]
+        for child, parent in zip(self.layers, learner_model.layers):
             
             # find linear in child
-            child_linear = None
-            for l in child:
-                if isinstance(l, torch.nn.Linear):
-                    child_linear = l
-                    break
+            child_linear = _LT_find_linear(child)
             assert(child_linear)
             
-            # find linear in child
-            parent_linear = None
-            for l in parent:
-                if isinstance(l, torch.nn.Linear):
-                    parent_linear = l
-                    break
+            # find linear in parent
+            parent_linear = _LT_find_linear(parent)
             assert(parent_linear)
             
             # get list of new weights after reseting the unpruned ones
@@ -150,7 +144,7 @@ class LT_TabularModel(Module):
                     break
             assert(child_linear)
             
-            # find linear in child
+            # find linear in parent
             parent_linear = None
             for l in parent:
                 if isinstance(l, torch.nn.Linear):
@@ -159,9 +153,9 @@ class LT_TabularModel(Module):
             assert(parent_linear)
             
             new_weights = []
-            for tensor1, tensor2 in zip(child_linear.weight, parent_linear.weight):
+            for tensor1 in child_linear.weight:
                 new_weights.append([])
-                for w1, w2 in zip(tensor1, tensor2):
+                for w1 in tensor1:
                     new_weights[-1].append(w1.item())
             new_weight_tensor = torch.FloatTensor(new_weights)
             child_linear.weight = nn.Parameter(new_weight_tensor)
