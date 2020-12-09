@@ -3,6 +3,7 @@ from fastai.tabular import *
 from fastai.tabular.all import *
 import torch
 import torch.nn.utils.prune
+import random
 
 
 def _LT_find_linear(layers):
